@@ -27,7 +27,6 @@ bool addJobToQueue(struct thread_pool * pool, struct thread_job job)
         pool->queue->bottom = (bottom + 1) % size; 
         full = false;
     }
-    printf("%d \n", full);
     pthread_cond_signal(&pool->signal);
     pthread_mutex_unlock(&pool->lock);
     return full;
