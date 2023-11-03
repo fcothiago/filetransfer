@@ -29,7 +29,7 @@ struct thread_pool
 
 /*Thread Queue Operations*/
 struct thread_queue * createThreadQueue(int size);
-int addJobToQueue(struct thread_pool * pool, struct thread_job job);
+bool addJobToQueue(struct thread_pool * pool, struct thread_job job);
 struct thread_job popJobFromQueue(struct thread_pool * pool);
 /*Thread Pool Operations*/
 struct thread_pool * startThreadPool(int size);
