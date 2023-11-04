@@ -14,7 +14,6 @@ struct thread_queue * createThreadQueue(int size)
 
 bool addJobToQueue(struct thread_pool * pool, struct thread_job job)
 {
-    pthread_mutex_lock(&pool->lock);
     int top = pool->queue->top;
     int bottom = pool->queue->bottom;
     int size = pool->queue->size;
@@ -28,13 +27,11 @@ bool addJobToQueue(struct thread_pool * pool, struct thread_job job)
         full = false;
     }
     pthread_cond_signal(&pool->signal);
-    pthread_mutex_unlock(&pool->lock);
     return full;
 }
 
 struct thread_job  popJobFromQueue(struct thread_pool * pool)
 {
-    pthread_mutex_lock(&pool->lock);
     int top = pool->queue->top;
     int size = pool->queue->size;
     struct thread_job job;
@@ -47,6 +44,5 @@ struct thread_job  popJobFromQueue(struct thread_pool * pool)
         if(pool->queue->top == pool->queue->bottom)
             pool->queue->top = -1;
     }
-    pthread_mutex_unlock(&pool->lock);
     return job ;
 }
