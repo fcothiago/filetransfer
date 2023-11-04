@@ -29,10 +29,11 @@ struct thread_pool
 
 /*Thread Queue Operations*/
 struct thread_queue * createThreadQueue(int size);
+void deleteThreadQueue(struct thread_queue * queue);
 bool addJobToQueue(struct thread_pool * pool, struct thread_job job);
 struct thread_job popJobFromQueue(struct thread_pool * pool);
 /*Thread Pool Operations*/
 struct thread_pool * startThreadPool(int size);
-bool startJob(struct thread_job job); 
+void stopThreadPool(struct thread_pool * pool); 
 
 #endif

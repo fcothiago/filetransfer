@@ -12,6 +12,12 @@ struct thread_queue * createThreadQueue(int size)
     return queue;
 }
 
+void deleteThreadQueue(struct thread_queue * queue)
+{
+    free(queue->threads);
+    free(queue);
+}
+
 bool addJobToQueue(struct thread_pool * pool, struct thread_job job)
 {
     int top = pool->queue->top;

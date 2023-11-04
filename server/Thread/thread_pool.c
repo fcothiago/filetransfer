@@ -33,3 +33,16 @@ struct thread_pool * startThreadPool(int size)
     }
     return pool;
 }
+
+void stopThreadPool(struct thread_pool * pool)
+{
+    pool->active = false;
+    pthread_cond_broadcast(&pool->signal);
+    for(int i = 0; i < pool->size ; i++)
+    {
+        pthread_join(pool->threads[i],NULL);
+    }
+    deleteThreadQueue(pool->queue);
+    free(pool->threads);
+    free(pool);
+}
