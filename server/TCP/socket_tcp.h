@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define THREAD_POOL_SIZE 10
+
 enum socket_flags
 {
     SOCKET_CREATED,
@@ -22,16 +24,14 @@ struct socket_info
     int port;
 };
 
-struct server_callback
+struct callback_args
 {
-    void (* success)(int);
-    void (* fail)(int);
-    void * props;
+    int socket_descriptor;
+    void * args;
 };
 
 //Creates a new tcp IPv4 Server.
 struct socket_info tcpIPv4Server(char * IPAddr, int port);
-struct socket_info startTcpServer(struct socket_info info, struct server_callback callbacks, int request_limit, int time_out);
-
+struct socket_info startTcpServer(struct socket_info info, void * (* callback)(void *), void * args, int request_limit, int time_out);
 
 #endif

@@ -1,4 +1,5 @@
 #include "socket_tcp.h"
+#include "../Thread/thread_pool.h"
 #include <sys/poll.h>
 
 struct socket_info tcpIPv4Server(char * IPAddr, int port)
@@ -41,8 +42,10 @@ struct socket_info tcpIPv4Server(char * IPAddr, int port)
     return infos;
 }
 
-struct socket_info startTcpServer(struct socket_info info, struct server_callback callbacks, int request_limit, int time_out)
+
+struct socket_info startTcpServer(struct socket_info info, void * (* callback)(void *), void *args, int request_limit, int time_out)
 {
+    struct thread_pool * pool =  startThreadPool(THREAD_POOL_SIZE);
     int response, received_socket;
     struct pollfd fds;
     nfds_t nfds = 1;
@@ -60,10 +63,14 @@ struct socket_info startTcpServer(struct socket_info info, struct server_callbac
         fds.events = POLLIN;
         fds.revents = 0;
         response = poll(&fds, nfds, time_out);
-        if(response == 0)
-            callbacks.success(received_socket);
-        else
-            callbacks.fail(received_socket);
+        //Data received
+        struct callback_args * cb_args = (struct callback_args *) malloc(sizeof(struct callback_args ));
+        struct thread_job job;
+        cb_args->args = args;
+        cb_args->socket_descriptor = received_socket;
+        job.args = cb_args;
+        job.job = callback;
+        addJobToQueue(pool,job);
     }while (1);
-    
+    stopThreadPool(pool);
 }
