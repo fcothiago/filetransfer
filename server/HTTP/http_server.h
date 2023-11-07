@@ -5,6 +5,8 @@
 #include <pthread.h>
 
 #define RESOURCES_BLOCK 10
+#define BUFFER_SIZE 1024
+#define END_POINT_SIZE 16
 
 struct http_server
 {
@@ -12,6 +14,7 @@ struct http_server
     pthread_t * server_thread;
     char ** resources_paths;
     char * IP;
+    char end_pont[END_POINT_SIZE+1];
     int resources_length, port;
 };
 

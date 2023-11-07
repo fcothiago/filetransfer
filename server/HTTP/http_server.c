@@ -1,9 +1,34 @@
 #include "http_server.h"
 #include <stdlib.h>
+#include <string.h>
+
+#define DIGIT_OR_LETTER(C) ( ('a' <= C && C <= 'z') || ('A' <= C && C <= 'Z') || ('0' <= C && C <= '9'))
+
+char *  get_end_point(char * buffer)
+{
+    char * pointer = strstr(buffer, "GET /");
+    char * end_point = NULL;
+    int i;
+    if(pointer)
+    {
+        end_point = malloc(END_POINT_SIZE*sizeof(char));
+        end_point[0] = '/';
+        pointer = &pointer[4];
+        for(i = 1; i < END_POINT_SIZE && DIGIT_OR_LETTER(pointer[i]) ; i++)
+        {
+            end_point[i] = pointer[i];   
+        }
+        end_point[i] = '\0';
+    }
+    return end_point;
+}
 
 void * process_request(void * args)
-{
-    printf("Hello World\n");
+{ 
+    struct callback_args * cb_args = ( struct callback_args * ) args;
+    char buffer[BUFFER_SIZE];
+    int bytes_received = recv(cb_args->socket_descriptor, buffer, BUFFER_SIZE, 0);
+    char * c = get_end_point(buffer);
 }
 
 void * http_server_job(void * argc)
