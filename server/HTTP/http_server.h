@@ -2,23 +2,31 @@
 #define HTTP_SERVER_H
 
 #include "../TCP/socket_tcp.h"
+#include <stdbool.h>
 #include <pthread.h>
 
 #define RESOURCES_BLOCK 10
-#define BUFFER_SIZE 1024
 #define END_POINT_SIZE 16
+
+struct resource
+{
+    char * path;
+    char * name;
+    char * type;
+};
 
 struct http_server
 {
     struct socket_info info;
     pthread_t * server_thread;
-    char ** resources_paths;
     char * IP;
     char end_pont[END_POINT_SIZE+1];
-    int resources_length, port;
+    int port, resources_length;
+    struct resource * resources;
 };
 
 struct http_server * startHttpServer(char *IP, int port);
+bool addResource(struct http_server * server, char * path);
 void stopHttpServer(struct http_server * server);
 
 #endif

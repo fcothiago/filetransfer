@@ -4,10 +4,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 
 #define THREAD_POOL_SIZE 10
+#define BUFFER_SIZE 64
+#define SOCKET_TIME_OUT 1
 
 enum socket_flags
 {

@@ -1,6 +1,7 @@
 #include "socket_tcp.h"
 #include "../Thread/thread_pool.h"
 #include <sys/poll.h>
+#include <sys/time.h>
 
 struct socket_info tcpIPv4Server(char * IPAddr, int port)
 {
@@ -57,6 +58,12 @@ struct socket_info startTcpServer(struct socket_info info, void * (* callback)(v
         received_socket = accept(info.socket_descriptor, NULL, NULL);
         if(response < 0) 
             continue;
+        const int buffer_size = BUFFER_SIZE;
+        struct timeval timeout;
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+        setsockopt(received_socket, SOL_SOCKET, SO_RCVLOWAT,(char *)&buffer_size, sizeof(buffer_size));
+        setsockopt(received_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
         //Waiting to available data.
         memset(&fds, 0, sizeof(fds));
         fds.fd = -1;

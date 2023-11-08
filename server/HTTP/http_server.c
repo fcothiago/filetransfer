@@ -23,12 +23,27 @@ char *  get_end_point(char * buffer)
     return end_point;
 }
 
+void post_file(int socket_descriptor, char * path, char * name)
+{
+    char response_header[] = "HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: %ld\r\n";
+    send(socket_descriptor,response_header,sizeof(response_header),0);
+    char filename_header[] = "Content-Disposition: attachment; filename=test.pdf\r\n\r\n";
+    send(socket_descriptor,response_header,sizeof(response_header),0);
+    //sprintf(response, "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %ld\r\n\r\n", file_size);
+}
+
 void * process_request(void * args)
 { 
     struct callback_args * cb_args = ( struct callback_args * ) args;
     char buffer[BUFFER_SIZE];
     int bytes_received = recv(cb_args->socket_descriptor, buffer, BUFFER_SIZE, 0);
-    char * c = get_end_point(buffer);
+    char * end_point = get_end_point(buffer);
+    for(;bytes_received >= BUFFER_SIZE;)
+    {
+        bytes_received = recv(cb_args->socket_descriptor, buffer, BUFFER_SIZE, 0);
+    }
+    post_file(cb_args->socket_descriptor,NULL,NULL);
+    close(cb_args->socket_descriptor);
 }
 
 void * http_server_job(void * argc)
@@ -40,11 +55,11 @@ void * http_server_job(void * argc)
 
 struct http_server * startHttpServer(char *IP, int port)
 {
-    struct http_server * server = (struct http_server *) malloc(sizeof(server));
+    struct http_server * server = (struct http_server *) malloc(sizeof(struct http_server));
     server->IP = IP;
     server->port = port;
     server->resources_length = 0;
-    server->resources_paths = (char **) malloc(RESOURCES_BLOCK*sizeof(char *));
+    server->resources = (struct resource *) malloc(sizeof(struct resource ));
     server->server_thread = (pthread_t *) malloc(sizeof(pthread_t));
     pthread_create(server->server_thread,NULL,http_server_job,server);
     return server;
