@@ -38,7 +38,6 @@ struct socket_info tcpIPv4Server(char * IPAddr, int port)
             break;
         }
         infos.socket_status = SOCKET_CREATED;
-
     }while(0);
     return infos;
 }

@@ -1,8 +1,10 @@
 #include "http_server.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #define DIGIT_OR_LETTER(C) ( ('a' <= C && C <= 'z') || ('A' <= C && C <= 'Z') || ('0' <= C && C <= '9'))
+#define END "\r\n"
 
 char *  get_end_point(char * buffer)
 {
@@ -23,13 +25,39 @@ char *  get_end_point(char * buffer)
     return end_point;
 }
 
-void post_file(int socket_descriptor, char * path, char * name)
+void post_file(int socket_descriptor, struct resource rsc)
 {
-    char response_header[] = "HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: %ld\r\n";
-    send(socket_descriptor,response_header,sizeof(response_header),0);
-    char filename_header[] = "Content-Disposition: attachment; filename=test.pdf\r\n\r\n";
-    send(socket_descriptor,response_header,sizeof(response_header),0);
-    //sprintf(response, "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %ld\r\n\r\n", file_size);
+    char response_header[] = "HTTP/1.1 200 OK\r\nContent-Type: application/";
+    char filename_header[] = "\r\nContent-Disposition: attachment; filename=\"";
+    char finish[] = "\"\r\n\r\n";
+
+    const int total_size = sizeof(response_header) + sizeof(filename_header) + sizeof(finish) + 1 + 2*strlen(rsc.type) + strlen(rsc.name) + 1;
+    char * msg = (char *) malloc(sizeof(char)*total_size);
+    msg[0] = '\0';
+
+    strcat(msg,response_header);
+    strcat(msg,rsc.type);
+    strcat(msg,filename_header);
+    strcat(msg,rsc.name);
+    strcat(msg,".");
+    strcat(msg,rsc.type);
+    strcat(msg,finish);
+
+    send(socket_descriptor,msg,total_size - 1,0);
+
+    FILE * file = fopen(rsc.path,"r");
+    if(file)
+    {
+        rewind(file);
+        char buffer[FILE_BUFFER];
+        int count;
+        do
+        {
+            count = fread(buffer,sizeof(char),FILE_BUFFER,file);
+            send(socket_descriptor,buffer,sizeof(char)*count,0);
+        }while (count >= FILE_BUFFER);
+    }
+    fclose(file);
 }
 
 void * process_request(void * args)
@@ -42,7 +70,11 @@ void * process_request(void * args)
     {
         bytes_received = recv(cb_args->socket_descriptor, buffer, BUFFER_SIZE, 0);
     }
-    post_file(cb_args->socket_descriptor,NULL,NULL);
+    struct http_server * server = cb_args->args;
+    for(int i = 0; i < server->resources_length; i++)
+    {
+        post_file(cb_args->socket_descriptor,server->resources[i]);
+    }
     close(cb_args->socket_descriptor);
 }
 
@@ -50,7 +82,7 @@ void * http_server_job(void * argc)
 {
     struct http_server * server = (struct http_server *) argc;
     server->info = tcpIPv4Server(server->IP, server->port);
-    startTcpServer(server->info, process_request, NULL, 10, 1000);
+    startTcpServer(server->info, process_request, server, 10, 1000);
 }
 
 struct http_server * startHttpServer(char *IP, int port)

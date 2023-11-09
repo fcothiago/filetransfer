@@ -7,6 +7,7 @@
 
 #define RESOURCES_BLOCK 10
 #define END_POINT_SIZE 16
+#define FILE_BUFFER 1024
 
 struct resource
 {
