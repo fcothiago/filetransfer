@@ -43,12 +43,12 @@ void post_file(int socket_descriptor, struct resource rsc)
     strcat(msg,rsc.type);
     strcat(msg,finish);
 
-    send(socket_descriptor,msg,total_size - 1,0);
+    send(socket_descriptor,msg,strlen(msg),0);
 
     FILE * file = fopen(rsc.path,"r");
     if(file)
     {
-        rewind(file);
+        //rewind(file);
         char buffer[FILE_BUFFER];
         int count;
         do
